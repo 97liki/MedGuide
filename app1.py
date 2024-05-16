@@ -1,3 +1,6 @@
+import nltk
+nltk.download('stopwords')
+nltk.download('wordnet')
 import re
 import requests
 from bs4 import BeautifulSoup
