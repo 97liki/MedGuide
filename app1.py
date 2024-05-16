@@ -19,8 +19,7 @@ import time  # Import the time module for sleep
 import nltk
 
 
-nltk.data.path.append('corpora')
-
+nltk.data.path.append('nltk_data')
 warnings.filterwarnings("ignore")
 
 
