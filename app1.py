@@ -15,11 +15,10 @@ import operator
 import joblib
 import streamlit as st
 import base64
+import time  # Import the time module for sleep
 
 
 warnings.filterwarnings("ignore")
-
-
 
 # Initialize NLP tools
 stop_words = stopwords.words('english')
@@ -42,13 +41,12 @@ def add_bg_from_local(image_path):
         unsafe_allow_html=True
     )
 
-# Load the trained Logistic Regression model using joblib
+# Load the trained Logistic Regression model using joblibs
 lr_comb = joblib.load("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\model.joblib")
 add_bg_from_local("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\bg.png")  # Adjust the path if needed
 df_comb = pd.read_csv("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\Dataset\\dis_sym_dataset_comb.csv")  # Disease combination
 df_norm = pd.read_csv("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\Dataset\\dis_sym_dataset_norm.csv")  # Individual Disease
 doctors = pd.read_csv("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\doctors.csv")
-
 
 dataset_symptoms = list(df_norm.columns[1:])
 doctors['Specialization'] = doctors['Specialization'].apply(lambda x: [spec.strip() for spec in x.split(',')])
@@ -324,7 +322,8 @@ def diseaseDetail(term):
     ret = ""
     for dis in diseases:
         query = dis + ' wikipedia'
-        for sr in search(query, tld="co.in", stop=10, pause=0.5):
+        for sr in search(query, num_results=10):
+            time.sleep(0.5)  # Add a pause between each search request
             match = re.search(r'wikipedia', sr)
             filled = 0
             if match:
@@ -365,10 +364,8 @@ def synonyms(term):
 def get_specialization(disease_name):
     return disease_to_specialization.get(disease_name, "Specialization not found")
 
-
-
 # Initialize Streamlit app
-st.title("Disease Predictor and Doctor Recommender")
+st.title("Disease Prediction and Doctor Recommendation System")
 
 # Add custom CSS for text color
 st.markdown(
