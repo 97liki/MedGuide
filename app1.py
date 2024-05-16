@@ -45,7 +45,7 @@ def add_bg_from_local(image_path):
     )
 
 # Load the trained Logistic Regression model using joblibs
-lr_comb = joblib.load("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\model.joblib")
+lr_comb = joblib.load("model.joblib")
 add_bg_from_local("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\bg.png")  # Adjust the path if needed
 df_comb = pd.read_csv("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\Dataset\\dis_sym_dataset_comb.csv")  # Disease combination
 df_norm = pd.read_csv("C:\\Users\\Likitha\\Downloads\\docotr_deploy\\Dataset\\dis_sym_dataset_norm.csv")  # Individual Disease
