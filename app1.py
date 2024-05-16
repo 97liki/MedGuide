@@ -1,4 +1,3 @@
-
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -17,9 +16,13 @@ import joblib
 import streamlit as st
 import base64
 import time  # Import the time module for sleep
+import nltk
 
+
+nltk.data.path.append('corpora')
 
 warnings.filterwarnings("ignore")
+
 
 # Initialize NLP tools
 stop_words = stopwords.words('english')
