@@ -47,8 +47,8 @@ def add_bg_from_local(image_path):
 # Load the trained Logistic Regression model using joblibs
 lr_comb = joblib.load("model.joblib")
 add_bg_from_local("bg.png")  # Adjust the path if needed
-df_comb = pd.read_csv("Dataset\\dis_sym_dataset_comb.csv")  # Disease combination
-df_norm = pd.read_csv("Dataset\\dis_sym_dataset_norm.csv")  # Individual Disease
+df_comb = pd.read_csv("dis_sym_dataset_comb.csv")  # Disease combination
+df_norm = pd.read_csv("dis_sym_dataset_norm.csv")  # Individual Disease
 doctors = pd.read_csv("doctors.csv")
 
 dataset_symptoms = list(df_norm.columns[1:])
