@@ -1,7 +1,7 @@
 streamlit
 beautifulsoup4
 requests
-googlesearch-python
+wikipedia-api
 scikit-learn
 nltk
 pandas
