@@ -351,7 +351,7 @@ def get_specialization(disease_name):
     return disease_to_specialization.get(disease_name, "Specialization not found")
 
 # Initialize Streamlit app
-st.title("Disease Prediction and Doctor Recommendation System")
+st.title("MedGuide")
 
 # Add custom CSS for text color
 st.markdown(
