@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-import wikipediaapi  # Updated import
+from googlesearch import search
 import warnings
 import numpy as np
 import pandas as pd
@@ -319,18 +319,35 @@ disease_to_specialization = {
 }
 
 def diseaseDetail(term):
-    wiki_wiki = wikipediaapi.Wikipedia('en')
-    page = wiki_wiki.page(term)
+    query = f"{term} site:wikipedia.org"
+    results = []
+    try:
+        for url in search(query, num_results=10, stop=10, pause=2):
+            if 'wikipedia.org' in url:
+                results.append(url)
+                break  # Only take the first Wikipedia result
+    except Exception as e:
+        return f"Error occurred during search: {e}"
 
-    if not page.exists():
-        return f"No details found for {term}."
+    if not results:
+        return f"No Wikipedia page found for {term}."
 
-    ret = f"== {page.title} ==\n\n{page.summary}\n\n"
-
-    for section in page.sections:
-        ret += f"== {section.title} ==\n{section.text}\n\n"
-    
-    return ret
+    wiki_url = results[0]
+    try:
+        wiki_response = requests.get(wiki_url)
+        wiki_response.raise_for_status()
+        soup = BeautifulSoup(wiki_response.content, 'html.parser')
+        paragraphs = soup.find_all('p')
+        details = ' '.join([para.get_text() for para in paragraphs[:3]])
+        return details
+    except requests.exceptions.HTTPError as errh:
+        return f"HTTP Error: {errh}"
+    except requests.exceptions.ConnectionError as errc:
+        return f"Error Connecting: {errc}"
+    except requests.exceptions.Timeout as errt:
+        return f"Timeout Error: {errt}"
+    except requests.exceptions.RequestException as err:
+        return f"An Error Occurred: {err}"
 
 def synonyms(term):
     synonyms = []
@@ -397,6 +414,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # User input for symptoms
 if 'step' not in st.session_state:
     st.session_state.step = 1
@@ -429,10 +447,6 @@ if st.session_state.step == 2:
         str_sym.add(' '.join(user_sym))
         expanded_symptoms.append(' '.join(str_sym).replace('_', ' '))
 
-    # st.session_state.expanded_symptoms = expanded_symptoms
-    # st.write("After query expansion, your symptoms are:")
-    # st.write(expanded_symptoms)
-    
     found_symptoms = set()
     for data_sym in dataset_symptoms:
         data_sym_split = data_sym.split()
