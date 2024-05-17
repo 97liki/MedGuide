@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-import wikipediaapi  # Use wikipedia-api to fetch Wikipedia pages
+import wikipediaapi  # Updated import
 import warnings
 import numpy as np
 import pandas as pd
@@ -325,9 +325,11 @@ def diseaseDetail(term):
     if not page.exists():
         return f"No details found for {term}."
 
-    ret = ""
+    ret = f"== {page.title} ==\n\n{page.summary}\n\n"
+
     for section in page.sections:
         ret += f"== {section.title} ==\n{section.text}\n\n"
+    
     return ret
 
 def synonyms(term):
