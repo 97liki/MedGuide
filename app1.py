@@ -21,7 +21,6 @@ import nltk
 nltk.data.path.append('nltk_data')
 warnings.filterwarnings("ignore")
 
-
 # Initialize NLP tools
 stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
