@@ -7,3 +7,4 @@ scikit-learn
 nltk
 joblib
 googlesearch-python
+wikipedia-api==0.5.4
