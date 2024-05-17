@@ -1,6 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
+import wikipediaapi 
 from googlesearch import search
 import warnings
 import numpy as np
