@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from googlesearch import search
+import wikipediaapi  
 import warnings
 import numpy as np
 import pandas as pd
@@ -321,32 +321,15 @@ disease_to_specialization = {
 }
 
 def diseaseDetail(term):
-    diseases = [term]
+    wiki_wiki = wikipediaapi.Wikipedia('en')
+    page = wiki_wiki.page(term)
+
+    if not page.exists():
+        return f"No details found for {term}."
+
     ret = ""
-    for dis in diseases:
-        query = dis + ' wikipedia'
-        for sr in search(query, num_results=10):
-            time.sleep(0.5)  # Add a pause between each search request
-            match = re.search(r'wikipedia', sr)
-            filled = 0
-            if match:
-                wiki = requests.get(sr, verify=False)
-                soup = BeautifulSoup(wiki.content, 'html.parser')  # Use default parser
-                info_table = soup.find("table", {"class": "infobox"})
-                if info_table is not None:
-                    for row in info_table.find_all("tr"):
-                        data = row.find("th", {"scope": "row"})
-                        if data is not None:
-                            if "Pronunciation" in data.get_text():
-                                continue
-                            symptom = str(row.find("td"))
-                            symptom = re.sub(r'<[^<]+?>', ' ', symptom)
-                            symptom = re.sub(r'\[.*\]', '', symptom)
-                            symptom = symptom.replace("&gt", ">").strip()
-                            ret += f"{data.get_text()} - {symptom}\n\n"
-                            filled = 1
-                if filled:
-                    break
+    for section in page.sections:
+        ret += f"== {section.title} ==\n{section.text}\n\n"
     return ret
 
 def synonyms(term):
