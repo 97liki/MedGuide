@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from googlesearch import search
+import wikipediaapi
 import warnings
 import numpy as np
 import pandas as pd
@@ -15,7 +15,7 @@ import operator
 import joblib
 import streamlit as st
 import base64
-import time  # Import the time module for sleep
+import time
 import nltk
 
 nltk.data.path.append('nltk_data')
@@ -319,35 +319,18 @@ disease_to_specialization = {
 }
 
 def diseaseDetail(term):
-    query = f"{term} site:wikipedia.org"
-    results = []
-    try:
-        for url in search(query, num_results=10, stop=10, pause=2):
-            if 'wikipedia.org' in url:
-                results.append(url)
-                break  # Only take the first Wikipedia result
-    except Exception as e:
-        return f"Error occurred during search: {e}"
+    wiki_wiki = wikipediaapi.Wikipedia('en')
+    page = wiki_wiki.page(term)
 
-    if not results:
-        return f"No Wikipedia page found for {term}."
+    if not page.exists():
+        return f"No details found for {term}."
 
-    wiki_url = results[0]
-    try:
-        wiki_response = requests.get(wiki_url)
-        wiki_response.raise_for_status()
-        soup = BeautifulSoup(wiki_response.content, 'html.parser')
-        paragraphs = soup.find_all('p')
-        details = ' '.join([para.get_text() for para in paragraphs[:3]])
-        return details
-    except requests.exceptions.HTTPError as errh:
-        return f"HTTP Error: {errh}"
-    except requests.exceptions.ConnectionError as errc:
-        return f"Error Connecting: {errc}"
-    except requests.exceptions.Timeout as errt:
-        return f"Timeout Error: {errt}"
-    except requests.exceptions.RequestException as err:
-        return f"An Error Occurred: {err}"
+    ret = f"== {page.title} ==\n\n{page.summary}\n\n"
+
+    for section in page.sections:
+        ret += f"== {section.title} ==\n{section.text}\n\n"
+    
+    return ret
 
 def synonyms(term):
     synonyms = []
