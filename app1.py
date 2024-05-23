@@ -318,19 +318,26 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
+import wikipediaapi
+
 def diseaseDetail(term):
-    wiki_wiki = wikipediaapi.Wikipedia('en')
-    page = wiki_wiki.page(term)
+    try:
+        wiki_wiki = wikipediaapi.Wikipedia('en')
+        page = wiki_wiki.page(term)
+        if not page.exists():
+            return f"No details found for {term}."
+        ret = f"== {page.title} ==\n\n{page.summary}\n\n"
+        for section in page.sections:
+            ret += f"== {section.title} ==\n{section.text}\n\n"
+        return ret
+    except AssertionError as e:
+        print(f"AssertionError: {e}")
+        return "Error: Wikipedia API initialization failed."
+    except Exception as e:
+        print(f"Exception: {e}")
+        return f"Error: {e}"
 
-    if not page.exists():
-        return f"No details found for {term}."
 
-    ret = f"== {page.title} ==\n\n{page.summary}\n\n"
-
-    for section in page.sections:
-        ret += f"== {section.title} ==\n{section.text}\n\n"
-    
-    return ret
 
 def synonyms(term):
     synonyms = []
