@@ -327,28 +327,34 @@ def diseaseDetail(term):
     ret = ""
     for dis in diseases:
         query = dis + ' wikipedia'
-        for sr in search(query, tld="co.in", stop=10, pause=0.5):
-            match = re.search(r'wikipedia', sr)
-            filled = 0
-            if match:
-                wiki = requests.get(sr, verify=False)
-                soup = BeautifulSoup(wiki.content, 'html.parser')  # Use default parser
-                info_table = soup.find("table", {"class": "infobox"})
-                if info_table is not None:
-                    for row in info_table.find_all("tr"):
-                        data = row.find("th", {"scope": "row"})
-                        if data is not None:
-                            if "Pronunciation" in data.get_text():
-                                continue
-                            symptom = str(row.find("td"))
-                            symptom = re.sub(r'<[^<]+?>', ' ', symptom)
-                            symptom = re.sub(r'\[.*\]', '', symptom)
-                            symptom = symptom.replace("&gt", ">").strip()
-                            ret += f"{data.get_text()} - {symptom}\n\n"
-                            filled = 1
-                if filled:
-                    break
+        try:
+            for sr in search(query, tld="co.in", stop=10, pause=0.5):
+                match = re.search(r'wikipedia', sr)
+                filled = 0
+                if match:
+                    wiki = requests.get(sr, verify=False)
+                    soup = BeautifulSoup(wiki.content, 'html.parser')  # Use default parser
+                    info_table = soup.find("table", {"class": "infobox"})
+                    if info_table is not None:
+                        for row in info_table.find_all("tr"):
+                            data = row.find("th", {"scope": "row"})
+                            if data is not None:
+                                if "Pronunciation" in data.get_text():
+                                    continue
+                                symptom = str(row.find("td"))
+                                symptom = re.sub(r'<[^<]+?>', ' ', symptom)
+                                symptom = re.sub(r'\[.*\]', '', symptom)
+                                symptom = symptom.replace("&gt", ">").strip()
+                                ret += f"{data.get_text()} - {symptom}\n\n"
+                                filled = 1
+                    if filled:
+                        break
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+            with open('error_log.txt', 'a') as f:
+                f.write(f"Error with query '{query}': {e}\n")
     return ret
+
 
 def synonyms(term):
     synonyms = []
