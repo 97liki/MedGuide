@@ -328,7 +328,7 @@ def diseaseDetail(term):
     for dis in diseases:
         query = dis + ' wikipedia'
         try:
-            for sr in search(query, tld="co.in", stop=10, pause=0.5):
+            for sr in search(query, stop=10, pause=0.5):  # Removed 'tld' parameter
                 match = re.search(r'wikipedia', sr)
                 filled = 0
                 if match:
