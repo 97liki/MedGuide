@@ -320,14 +320,21 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
+class CustomWikipedia(wikipediaapi.Wikipedia):
+    def __init__(self, language='en', user_agent=None):
+        super().__init__(language)
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': user_agent})
+
+    def _request(self, url):
+        response = self.session.get(url)
+        response.raise_for_status()
+        return response.json()
+
 def diseaseDetail(term):
     try:
         user_agent = "YourAppName/1.0 (yourname@example.com)"  # Replace with your details
-        wiki_wiki = wikipediaapi.Wikipedia(
-            language='en',
-            extract_format=wikipediaapi.ExtractFormat.WIKI,
-            user_agent=user_agent
-        )
+        wiki_wiki = CustomWikipedia(language='en', user_agent=user_agent)
         page = wiki_wiki.page(term)
         if not page.exists():
             return f"No details found for {term}."
