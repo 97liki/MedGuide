@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from googlesearch import search
+import wikipediaapi
 import warnings
 import numpy as np
 import pandas as pd
@@ -15,19 +15,16 @@ import operator
 import joblib
 import streamlit as st
 import base64
-import time  # Import the time module for sleep
+import time
 import nltk
-
 
 nltk.data.path.append('nltk_data')
 warnings.filterwarnings("ignore")
-
 
 # Initialize NLP tools
 stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
 splitter = RegexpTokenizer(r'\w+')
-
 
 # Function to add background image
 def add_bg_from_local(image_path):
@@ -45,13 +42,12 @@ def add_bg_from_local(image_path):
         unsafe_allow_html=True
     )
 
-# Load the trained Logistic Regression model using joblib
-lr_comb = joblib.load('model.joblib')
-add_bg_from_local('bg.png')  # Adjust the path if needed
+# Load the trained Logistic Regression model using joblibs
+lr_comb = joblib.load("model.joblib")
+add_bg_from_local("/Users/himaneesh/Downloads/bg.png")  # Adjust the path if needed
 df_comb = pd.read_csv("dis_sym_dataset_comb.csv")  # Disease combination
 df_norm = pd.read_csv("dis_sym_dataset_norm.csv")  # Individual Disease
-doctors = pd.read_csv('doctors.csv')
-
+doctors = pd.read_csv("doctors.csv")
 
 dataset_symptoms = list(df_norm.columns[1:])
 doctors['Specialization'] = doctors['Specialization'].apply(lambda x: [spec.strip() for spec in x.split(',')])
@@ -128,7 +124,7 @@ disease_to_specialization = {
     'Coronary Heart Disease': 'Cardiologist',
     'Coronavirus disease 2019 (COVID-19)': 'Infectious Diseases',
     'Cough': 'General Physician',
-    'Crimean Congo haemorrhagic fever (CCHF)': 'Infectious Diseases',
+    'Crimean-Congo haemorrhagic fever (CCHF)': 'Infectious Diseases',
     'Dehydration': 'General Physician',
     'Dementia': 'Neurologist',
     'Dengue': 'Infectious Diseases',
@@ -323,38 +319,19 @@ disease_to_specialization = {
 }
 
 def diseaseDetail(term):
-    diseases = [term]
-    ret = ""
-    for dis in diseases:
-        query = dis + ' wikipedia'
-        try:
-            for sr in search(query, stop=10, pause=0.5):  # Removed 'tld' parameter
-                match = re.search(r'wikipedia', sr)
-                filled = 0
-                if match:
-                    wiki = requests.get(sr, verify=False)
-                    soup = BeautifulSoup(wiki.content, 'html.parser')  # Use default parser
-                    info_table = soup.find("table", {"class": "infobox"})
-                    if info_table is not None:
-                        for row in info_table.find_all("tr"):
-                            data = row.find("th", {"scope": "row"})
-                            if data is not None:
-                                if "Pronunciation" in data.get_text():
-                                    continue
-                                symptom = str(row.find("td"))
-                                symptom = re.sub(r'<[^<]+?>', ' ', symptom)
-                                symptom = re.sub(r'\[.*\]', '', symptom)
-                                symptom = symptom.replace("&gt", ">").strip()
-                                ret += f"{data.get_text()} - {symptom}\n\n"
-                                filled = 1
-                    if filled:
-                        break
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-            with open('error_log.txt', 'a') as f:
-                f.write(f"Error with query '{query}': {e}\n")
-    return ret
+    wiki_wiki = wikipediaapi.Wikipedia(user_agent="DiseasePredictorApp/1.0 (nidhishaaardham07@gmail.com)")
+    page = wiki_wiki.page(term)
 
+    if not page.exists():
+        return f"No details found for {term}."
+
+    ret = f"== {page.title} ==\n\n{page.summary}\n\n"
+
+    for section in page.sections:
+        if section.title.lower() not in ['references', 'external links','see also']:
+          ret += f"== {section.title} ==\n{section.text}\n\n"
+    
+    return ret
 
 def synonyms(term):
     synonyms = []
@@ -374,10 +351,8 @@ def synonyms(term):
 def get_specialization(disease_name):
     return disease_to_specialization.get(disease_name, "Specialization not found")
 
-
-
 # Initialize Streamlit app
-st.title("MedGuide")
+st.title("Disease Prediction and Doctor Recommendation System")
 
 # Add custom CSS for text color
 st.markdown(
@@ -423,6 +398,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 # User input for symptoms
 if 'step' not in st.session_state:
     st.session_state.step = 1
@@ -455,10 +431,6 @@ if st.session_state.step == 2:
         str_sym.add(' '.join(user_sym))
         expanded_symptoms.append(' '.join(str_sym).replace('_', ' '))
 
-    # st.session_state.expanded_symptoms = expanded_symptoms
-    # st.write("After query expansion, your symptoms are:")
-    # st.write(expanded_symptoms)
-    
     found_symptoms = set()
     for data_sym in dataset_symptoms:
         data_sym_split = data_sym.split()
@@ -530,9 +502,11 @@ if st.session_state.step == 4:
     st.session_state.step = 5
 
 if st.session_state.step == 5:
-    select_disease = st.selectbox("More details about the disease:", st.session_state.most_probable_diseases)
+    select_disease = st.selectbox("Select a disease to see details:", st.session_state.most_probable_diseases)
     if select_disease:
-        st.write(diseaseDetail(select_disease))
+        details = diseaseDetail(select_disease)
+        st.write(f"### {select_disease}")
+        st.write(details)
     
     if st.button("Show Doctor Recommendations"):
         st.session_state.selected_disease = select_disease
