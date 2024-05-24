@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-import wikipediaapi
+import wikipedia
 import warnings
 import numpy as np
 import pandas as pd
@@ -320,29 +320,19 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
-# Custom function to create a session with a user agent
-def custom_wikipedia_session():
-    session = requests.Session()
-    user_agent = "YourAppName/1.0 (yourname@example.com)"  # Replace with your details
-    session.headers.update({'User-Agent': user_agent})
-    return session
-
-# Monkey-patch the wikipediaapi library to use the custom session
-wikipediaapi.Wikipedia._session = custom_wikipedia_session
+# Set user agent for wikipedia library
+wikipedia.set_lang("en")
+wikipedia.set_user_agent("YourAppName/1.0 (yourname@example.com)")
 
 def diseaseDetail(term):
     try:
-        wiki_wiki = wikipediaapi.Wikipedia('en')
-        page = wiki_wiki.page(term)
-        if not page.exists():
-            return f"No details found for {term}."
+        page = wikipedia.page(term)
         ret = f"== {page.title} ==\n\n{page.summary}\n\n"
-        for section in page.sections:
-            ret += f"== {section.title} ==\n{section.text}\n\n"
         return ret
-    except wikipediaapi.exceptions.WikipediaException as e:
-        print(f"WikipediaException: {e}")
-        return "Error: Wikipedia API initialization failed due to a WikipediaException."
+    except wikipedia.exceptions.DisambiguationError as e:
+        return f"Error: {term} may refer to multiple pages: {e.options}"
+    except wikipedia.exceptions.PageError:
+        return f"No details found for {term}."
     except Exception as e:
         print(f"Exception: {e}")
         return f"Error: {e}"
@@ -410,7 +400,7 @@ st.markdown(
     }}
     </style>
     """,
-        unsafe_allow_html=True
+    unsafe_allow_html=True
 )
 
 # User input for symptoms
