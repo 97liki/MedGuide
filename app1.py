@@ -319,7 +319,7 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
-from googlesearch import search
+
 
 def diseaseDetail(term):
     diseases = [term]
