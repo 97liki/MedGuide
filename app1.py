@@ -15,10 +15,12 @@ import operator
 import joblib
 import streamlit as st
 import base64
-import time
 import nltk
 
 nltk.data.path.append('nltk_data')
+nltk.download('stopwords')
+nltk.download('wordnet')
+
 warnings.filterwarnings("ignore")
 
 # Initialize NLP tools
@@ -318,11 +320,14 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
-import wikipediaapi
-
 def diseaseDetail(term):
     try:
-        wiki_wiki = wikipediaapi.Wikipedia('en')
+        user_agent = "YourAppName/1.0 (yourname@example.com)"  # Replace with your details
+        wiki_wiki = wikipediaapi.Wikipedia(
+            language='en',
+            extract_format=wikipediaapi.ExtractFormat.WIKI,
+            user_agent=user_agent
+        )
         page = wiki_wiki.page(term)
         if not page.exists():
             return f"No details found for {term}."
@@ -330,26 +335,24 @@ def diseaseDetail(term):
         for section in page.sections:
             ret += f"== {section.title} ==\n{section.text}\n\n"
         return ret
-    except AssertionError as e:
-        print(f"AssertionError: {e}")
-        return "Error: Wikipedia API initialization failed."
+    except wikipediaapi.exceptions.WikipediaException as e:
+        print(f"WikipediaException: {e}")
+        return "Error: Wikipedia API initialization failed due to a WikipediaException."
     except Exception as e:
         print(f"Exception: {e}")
         return f"Error: {e}"
 
-
-
 def synonyms(term):
     synonyms = []
-    response = requests.get(f'https://www.thesaurus.com/browse/{term}')
-    soup = BeautifulSoup(response.content, "html.parser")
     try:
+        response = requests.get(f'https://www.thesaurus.com/browse/{term}')
+        soup = BeautifulSoup(response.content, "html.parser")
         container = soup.find('section', {'class': 'MainContentContainer'})
         row = container.find('div', {'class': 'css-191l5o0-ClassicContentCard'}).find_all('li')
         for x in row:
             synonyms.append(x.get_text())
-    except:
-        pass
+    except Exception as e:
+        print(f"Error fetching synonyms from Thesaurus.com: {e}")
     for syn in wordnet.synsets(term):
         synonyms += syn.lemma_names()
     return set(synonyms)
