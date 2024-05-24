@@ -368,7 +368,7 @@ def get_specialization(disease_name):
 
 
 # Initialize Streamlit app
-st.title("Disease Predictor and Doctor Recommender")
+st.title("MedGuide")
 
 # Add custom CSS for text color
 st.markdown(
