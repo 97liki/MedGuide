@@ -320,21 +320,19 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
-class CustomWikipedia(wikipediaapi.Wikipedia):
-    def __init__(self, language='en', user_agent=None):
-        super().__init__(language)
-        self.session = requests.Session()
-        self.session.headers.update({'User-Agent': user_agent})
+# Custom function to create a session with a user agent
+def custom_wikipedia_session():
+    session = requests.Session()
+    user_agent = "YourAppName/1.0 (yourname@example.com)"  # Replace with your details
+    session.headers.update({'User-Agent': user_agent})
+    return session
 
-    def _request(self, url):
-        response = self.session.get(url)
-        response.raise_for_status()
-        return response.json()
+# Monkey-patch the wikipediaapi library to use the custom session
+wikipediaapi.Wikipedia._session = custom_wikipedia_session
 
 def diseaseDetail(term):
     try:
-        user_agent = "YourAppName/1.0 (yourname@example.com)"  # Replace with your details
-        wiki_wiki = CustomWikipedia(language='en', user_agent=user_agent)
+        wiki_wiki = wikipediaapi.Wikipedia('en')
         page = wiki_wiki.page(term)
         if not page.exists():
             return f"No details found for {term}."
@@ -412,7 +410,7 @@ st.markdown(
     }}
     </style>
     """,
-    unsafe_allow_html=True
+        unsafe_allow_html=True
 )
 
 # User input for symptoms
