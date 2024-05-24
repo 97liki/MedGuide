@@ -15,16 +15,19 @@ import operator
 import joblib
 import streamlit as st
 import base64
+import time  # Import the time module for sleep
+import nltk
 
 
+nltk.data.path.append('nltk_data')
 warnings.filterwarnings("ignore")
-
 
 
 # Initialize NLP tools
 stop_words = stopwords.words('english')
 lemmatizer = WordNetLemmatizer()
 splitter = RegexpTokenizer(r'\w+')
+
 
 # Function to add background image
 def add_bg_from_local(image_path):
