@@ -319,12 +319,14 @@ disease_to_specialization = {
     'papilloedema': 'Ophthalmologist'
 }
 
+from googlesearch import search
+
 def diseaseDetail(term):
     diseases = [term]
     ret = ""
     for dis in diseases:
         query = dis + ' wikipedia'
-        for sr in search(query, num_results=10, pause=0.5):
+        for sr in search(query, num=10, pause=0.5):
             match = re.search(r'wikipedia', sr)
             filled = 0
             if match:
@@ -346,6 +348,7 @@ def diseaseDetail(term):
                 if filled:
                     break
     return ret
+
 
 
 
